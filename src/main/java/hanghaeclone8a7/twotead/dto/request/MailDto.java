@@ -14,10 +14,8 @@ import java.util.List;
 @Setter
 public class MailDto {
 
-    private String position;
     private String name;
-    private String phone;
     private String email;
-    private List<MultipartFile> multipartFile;
+    private List<MultipartFile> formData;
 
 }

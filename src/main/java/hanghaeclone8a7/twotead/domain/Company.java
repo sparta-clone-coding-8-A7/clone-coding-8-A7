@@ -37,4 +37,7 @@ public class Company extends Timestamped{
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JobPost> jobPostList;
+
+    @Column
+    private String email;
 }

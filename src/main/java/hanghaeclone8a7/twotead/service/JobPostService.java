@@ -9,6 +9,7 @@ import hanghaeclone8a7.twotead.dto.response.ResponseDto;
 import hanghaeclone8a7.twotead.repository.*;
 import hanghaeclone8a7.twotead.utils.CheckUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,8 @@ public class JobPostService {
     private final JobGroupRepository jobGroupRepository;
     private final JobDetailRepository jobDetailRepository;
 
-    private final static String BASICIMAGE = "https://hanghae7zo.s3.ap-northeast-2.amazonaws.com/basicImage.png";
+    @Value("${basicImage}")
+    private String BASICIMAGE;
 
     @Transactional(readOnly = true)
     public ResponseDto<?> getJobPostList(String query, Long lastPostId, int size, HttpServletRequest request) {
@@ -308,8 +310,18 @@ public class JobPostService {
     }
 
     // 지원하기(메일)
-    public ResponseDto<?> apply(HttpServletRequest request, MailDto mailDto) {
-        return mailService.sendMail(mailDto);
+    public ResponseDto<?> apply(HttpServletRequest request, MailDto mailDto, Long jobPostId) {
+        JobPost jobPost = checkUtil.isPresentJobPost(jobPostId);
+        if (null == jobPost) {
+            return ResponseDto.fail("NOT_FOUND", "존재하지 않는 게시글입니다.");
+        }
+
+        Company company = companyRepository.findById(jobPost.getCompany().getId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
+
+        return mailService.sendMail(mailDto, jobPost.getPosition(), company.getEmail());
     }
 
 }

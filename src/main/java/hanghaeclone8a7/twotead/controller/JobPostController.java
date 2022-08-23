@@ -92,9 +92,9 @@ public class JobPostController {
     }
 
     // 지원하기(role=구직자)
-    @PostMapping("/mail")
-    public ResponseDto<?> execMail(HttpServletRequest request, @ModelAttribute MailDto mailDto) {
-        return jobPostService.apply(request, mailDto);
+    @PostMapping("/jobPost/{jobPostId}/apply")
+    public ResponseDto<?> execMail(HttpServletRequest request, @ModelAttribute MailDto mailDto, @PathVariable Long jobPostId) {
+        return jobPostService.apply(request, mailDto, jobPostId);
     }
 
 }
