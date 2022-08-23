@@ -50,12 +50,6 @@ public class JobPost extends Timestamped{
     @Column(nullable = false)
     private boolean invalid = true; // 마감일 지났으면 false (안보임)
 
-    /*@OneToMany(mappedBy = "jobPost", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JobPostImgUrl> imgList;*/
-
-    @Value("${basicImage}")
-    private String basicImage;
-
     public void update(JobPostRequestDto jobPostRequestDto){
         this.position = jobPostRequestDto.getPosition();
         this.content = jobPostRequestDto.getContent();
@@ -63,7 +57,7 @@ public class JobPost extends Timestamped{
 
         String imgUrl = "";
         if(jobPostRequestDto.getImgUrlList().size() == 0){
-            imgUrl = basicImage;
+            imgUrl = "https://hanghae7zo.s3.ap-northeast-2.amazonaws.com/basicImage.png";
         } else {
             imgUrl = jobPostRequestDto.getImgUrlList().get(0);
         }

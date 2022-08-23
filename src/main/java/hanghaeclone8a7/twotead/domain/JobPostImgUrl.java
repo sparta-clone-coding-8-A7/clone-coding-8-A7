@@ -18,10 +18,6 @@ public class JobPostImgUrl {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 식별번호
 
-    /*@JoinColumn(name = "jobPost_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    private JobPost jobPost;*/
-
     @Column(nullable = false)
     private Long jobPostId;
 

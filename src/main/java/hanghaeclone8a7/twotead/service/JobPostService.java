@@ -291,6 +291,22 @@ public class JobPostService {
         return ResponseDto.success();
     }
 
+    // 지원하기(메일)
+    @Transactional
+    public ResponseDto<?> apply(HttpServletRequest request, MailDto mailDto, Long jobPostId) {
+        JobPost jobPost = checkUtil.isPresentJobPost(jobPostId);
+        if (null == jobPost) {
+            return ResponseDto.fail("NOT_FOUND", "존재하지 않는 게시글입니다.");
+        }
+
+        Company company = companyRepository.findById(jobPost.getCompany().getId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
+
+        return mailService.sendMail(mailDto, jobPost.getPosition(), company.getEmail());
+    }
+
     //마감일 지난 공고 숨기기
     @Scheduled(cron = "0 1 0 * * *") // 매일 정오 1분
     public void deleteOverDeadlineJobPosts(){
@@ -309,19 +325,5 @@ public class JobPostService {
 
     }
 
-    // 지원하기(메일)
-    public ResponseDto<?> apply(HttpServletRequest request, MailDto mailDto, Long jobPostId) {
-        JobPost jobPost = checkUtil.isPresentJobPost(jobPostId);
-        if (null == jobPost) {
-            return ResponseDto.fail("NOT_FOUND", "존재하지 않는 게시글입니다.");
-        }
-
-        Company company = companyRepository.findById(jobPost.getCompany().getId()).orElse(null);
-        if(company == null){
-            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
-        }
-
-        return mailService.sendMail(mailDto, jobPost.getPosition(), company.getEmail());
-    }
 
 }

@@ -20,7 +20,7 @@ public class MailService {
     public ResponseDto<?> sendMail(MailDto mailDto, String position, String email) {
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        String subject = mailDto.getName() + "님이 " + position + "부분에 지원하였습니다.";
+        String subject = mailDto.getName() + "님이 [" + position + "]에 지원하였습니다.";
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8"); // use multipart (true)
