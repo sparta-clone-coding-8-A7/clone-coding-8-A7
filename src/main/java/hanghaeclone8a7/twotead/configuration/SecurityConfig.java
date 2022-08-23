@@ -63,6 +63,7 @@ public class SecurityConfig{
                 .authorizeRequests()
                 .antMatchers("/api/user/**").permitAll()
                 .antMatchers("/api/jobPost/**").permitAll()
+                .antMatchers("/api/company/**").permitAll()
                 .antMatchers("/api/comment/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .anyRequest().permitAll()

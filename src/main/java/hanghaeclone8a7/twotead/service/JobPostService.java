@@ -1,11 +1,13 @@
 package hanghaeclone8a7.twotead.service;
 
+import hanghaeclone8a7.twotead.annotation.LoginCheck;
 import hanghaeclone8a7.twotead.domain.*;
 import hanghaeclone8a7.twotead.dto.request.JobPostRequestDto;
 import hanghaeclone8a7.twotead.dto.request.MailDto;
 import hanghaeclone8a7.twotead.dto.response.JobPostDetailResponseDto;
 import hanghaeclone8a7.twotead.dto.response.ResponseDto;
 import hanghaeclone8a7.twotead.repository.*;
+import hanghaeclone8a7.twotead.utils.CheckUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,23 +27,21 @@ import java.util.stream.Collectors;
 public class JobPostService {
 
     private final JobPostRepository jobPostRepository;
-    private final MemberRepository memberRepository;
     private final StackRepository stackRepository;
     private final CompanyRepository companyRepository;
     private final JobPostImgUrlRepository jobPostImgUrlRepository;
     private final StackListRepository stackListRepository;
     private final JobPostCustomRePository jobPostCustomRePository;
+    private final CheckUtil checkUtil;
 
     private final MailService mailService;
+    private final JobGroupRepository jobGroupRepository;
+    private final JobDetailRepository jobDetailRepository;
 
-    private final static String BASICIMAGE = "기본이미지.jpg";
+    private final static String BASICIMAGE = "https://hanghae7zo.s3.ap-northeast-2.amazonaws.com/basicImage.png";
 
     @Transactional(readOnly = true)
     public ResponseDto<?> getJobPostList(String query, Long lastPostId, int size, HttpServletRequest request) {
-
-        // 멤버검증 필수.
-        // 테스트용
-        Member member = memberRepository.findById(4l).orElse(null);
         return ResponseDto.success(jobPostCustomRePository.findJobPosts(query, lastPostId, size));
     }
 
@@ -53,20 +53,74 @@ public class JobPostService {
 
     // 채용공고 작성 페이지
     @Transactional(readOnly = true)
+    @LoginCheck
     public ResponseDto<?> getJobPostPage(HttpServletRequest request) {
 
-        // 멤버검증
+        // 멤버검증 필수(role = 회사) 시큐리티 컨텍스트에서 해야함
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            return ResponseDto.fail("MEMBER_NOT_FOUND", "로그인이 필요합니다.");
+        }
+
+        // 회사 정보 가져오기. 추후 JPA Auditing CreatedBy로 바꿔보자.
+        Company company = companyRepository.findById(member.getCompanyId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
+
         return ResponseDto.success(stackRepository.findAll());
+    }
+
+    // 채용공고 페이지에 JobGroup 가져오기
+    @Transactional(readOnly = true)
+    public ResponseDto<?> getJobPostPageJobGroup(HttpServletRequest request) {
+
+        // 멤버검증 필수(role = 회사) 시큐리티 컨텍스트에서 해야함
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            return ResponseDto.fail("MEMBER_NOT_FOUND", "로그인이 필요합니다.");
+        }
+
+        // 회사 정보 가져오기. 추후 JPA Auditing CreatedBy로 바꿔보자.
+        Company company = companyRepository.findById(member.getCompanyId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
+
+        return ResponseDto.success(jobGroupRepository.findAll());
+    }
+
+    // 채용공고 페이지에 JobDetail 가져오기
+    @Transactional(readOnly = true)
+    public ResponseDto<?> getJobPostPageJobDetail(HttpServletRequest request, Long jobGroupId) {
+        // 멤버검증 필수(role = 회사) 시큐리티 컨텍스트에서 해야함
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            return ResponseDto.fail("MEMBER_NOT_FOUND", "로그인이 필요합니다.");
+        }
+
+        // 회사 정보 가져오기. 추후 JPA Auditing CreatedBy로 바꿔보자.
+        Company company = companyRepository.findById(member.getCompanyId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
+        return ResponseDto.success(jobDetailRepository.findJobDetailsByPcode(jobGroupId));
     }
     // 채용공고 작성
     @Transactional
     public ResponseDto<?> createJobPost(JobPostRequestDto requestDto, HttpServletRequest request) {
 
         // 멤버검증 필수(role = 회사) 시큐리티 컨텍스트에서 해야함
-        Member member = findByMemberId(4L);
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            return ResponseDto.fail("MEMBER_NOT_FOUND", "로그인이 필요합니다.");
+        }
 
         // 회사 정보 가져오기. 추후 JPA Auditing CreatedBy로 바꿔보자.
         Company company = companyRepository.findById(member.getCompanyId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
 
         // 대표이미지 설정하기
         String basicImage = "";
@@ -112,12 +166,15 @@ public class JobPostService {
     public ResponseDto<?> findJobPostDetail(Long jobPostId) {
 
         // 채용공고 조회
-        JobPost jobPost = validatePost(jobPostId);
+        JobPost jobPost = checkUtil.isPresentJobPost(jobPostId);
         if (null == jobPost) {
             return ResponseDto.fail("NOT_FOUND", "존재하지 않는 게시글입니다.");
         }
         // 회사정보
         Company company = companyRepository.findById(jobPost.getCompany().getId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
         // 이미지리스트 조회
         List<JobPostImgUrl> imgUrlList = jobPostImgUrlRepository.findAllByJobPostId(jobPostId);
         // 스택리스트
@@ -141,13 +198,18 @@ public class JobPostService {
                                         JobPostRequestDto requestDto) {
 
         // 멤버검증 필수(role = 회사) 시큐리티 컨텍스트에서 해야함
-        Member member = findByMemberId(4L);
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            return ResponseDto.fail("MEMBER_NOT_FOUND", "로그인이 필요합니다.");
+        }
 
         // 회사 정보 가져오기. 추후 JPA Auditing CreatedBy로 바꿔보자.
         Company company = companyRepository.findById(member.getCompanyId()).orElse(null);
-
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
         // jobPostId 검증
-        JobPost jobPost = validatePost(jobPostId);
+        JobPost jobPost = checkUtil.isPresentJobPost(jobPostId);
         if (null == jobPost) {
             return ResponseDto.fail("NOT_FOUND", "존재하지 않는 게시글입니다.");
         }
@@ -177,9 +239,19 @@ public class JobPostService {
     @Transactional(readOnly = true)
     public ResponseDto<?> updateJobPostPage(HttpServletRequest request, Long jobPostId) {
 
-        // 멤버 검증
+        // 멤버검증 필수(role = 회사) 시큐리티 컨텍스트에서 해야함
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            return ResponseDto.fail("MEMBER_NOT_FOUND", "로그인이 필요합니다.");
+        }
+
+        // 회사 정보 가져오기. 추후 JPA Auditing CreatedBy로 바꿔보자.
+        Company company = companyRepository.findById(member.getCompanyId()).orElse(null);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
         // 게시글 검증
-        JobPost jobPost = validatePost(jobPostId);
+        JobPost jobPost = checkUtil.isPresentJobPost(jobPostId);
         if (null == jobPost) {
             return ResponseDto.fail("NOT_FOUND", "존재하지 않는 게시글입니다.");
         }
@@ -193,15 +265,22 @@ public class JobPostService {
     public ResponseDto<?> deleteJobPost(HttpServletRequest request, Long jobPostId) {
 
         // 멤버검증 필수(role = 회사) 시큐리티 컨텍스트에서 해야함
-        Member member = findByMemberId(4L);
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            return ResponseDto.fail("MEMBER_NOT_FOUND", "로그인이 필요합니다.");
+        }
 
         // 회사 정보 가져오기. 추후 JPA Auditing CreatedBy로 바꿔보자.
         Company company = companyRepository.findById(member.getCompanyId()).orElse(null);
-
-        JobPost jobPost = validatePost(jobPostId);
+        if(company == null){
+            return ResponseDto.fail("COMPANY_NOT_FOUND", "등록된 회사 계정이 없습니다.");
+        }
+        // 게시글 검증
+        JobPost jobPost = checkUtil.isPresentJobPost(jobPostId);
         if (null == jobPost) {
             return ResponseDto.fail("NOT_FOUND", "존재하지 않는 게시글입니다.");
         }
+
         // ImgUrlList 삭제
         jobPostImgUrlRepository.deleteAllByJobPostId(jobPostId);
         // StackList 삭제
@@ -230,21 +309,7 @@ public class JobPostService {
 
     // 지원하기(메일)
     public ResponseDto<?> apply(HttpServletRequest request, MailDto mailDto) {
-        // 멤버 검증
         return mailService.sendMail(mailDto);
     }
-
-
-    // 멤버 확인
-    Member findByMemberId(Long memberId){
-        return memberRepository.findById(memberId).orElse(null);
-    }
-
-    // 게시글 검증
-    JobPost validatePost(Long jobPostId){
-        return jobPostRepository.findById(jobPostId).orElse(null);
-    }
-
-
 
 }
