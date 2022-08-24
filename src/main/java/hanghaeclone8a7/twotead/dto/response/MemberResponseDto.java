@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MemberResponseDto {
+    private Long id;
     private String username;
     private String email;
     private Gender gender;
@@ -23,6 +24,7 @@ public class MemberResponseDto {
         String usernameSplit[] = member.getUsername().split("_");
 
         return MemberResponseDto.builder()
+                .id(member.getId())
                 .email(member.getEmail())
                 .birthday(member.getBirthday())
                 .gender(member.getGender())
