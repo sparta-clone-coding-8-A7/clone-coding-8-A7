@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-public class Heart {
+public class Heart extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

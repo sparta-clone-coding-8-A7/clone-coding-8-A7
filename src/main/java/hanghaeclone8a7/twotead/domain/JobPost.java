@@ -41,12 +41,14 @@ public class JobPost extends Timestamped{
     private Long jobDetailId;
 
     @Column
+    @Builder.Default
     private int heart = 0; // 좋아요
 
     @Column
     private String imgUrl;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean invalid = true; // 마감일 지났으면 false (안보임)
 
     /*@OneToMany(mappedBy = "jobPost", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

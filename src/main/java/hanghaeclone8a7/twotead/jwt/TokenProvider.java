@@ -17,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,7 @@ public class TokenProvider {
 
     private final Key key;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final MemberRepository memberRepository;
+    private final UserDtailsServiceImpl userDtailsService;
 
 
     public TokenProvider(
@@ -49,14 +50,14 @@ public class TokenProvider {
             @Value("${jwt.access-token-validity-in-seconds.regexp}") long accessTokenValidityInSeconds,
             @Value("${jwt.refresh-token-validity-in-seconds.regexp}") long refreshTokenValidityInSeconds,
             RefreshTokenRepository refreshTokenRepository,
-            MemberRepository memberRepository) {
+            UserDtailsServiceImpl userDtailsService) {
 //        this.secret = secret;
         this.refreshTokenRepository = refreshTokenRepository;
         this.accessTokenValidityInMilliseconds = accessTokenValidityInSeconds * 1000;
         this.refreshTokenValidityInMilliseconds = refreshTokenValidityInSeconds * 1000;
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.memberRepository = memberRepository;
+        this.userDtailsService = userDtailsService;
     }
 
 
@@ -122,20 +123,21 @@ public class TokenProvider {
 
         System.out.println("authorities = " + authorities);
 
-        User principal = new User(claims.getSubject(), "", authorities);
+//        User principal = new User(claims.getSubject(), "", authorities);
+        UserDetails principal = userDtailsService.loadUserByUsername(claims.getSubject());
+        System.out.println("principal = " + principal);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
-    // 부여된 역할을 가지고 멤버를 찾아오기
-    public Member getMemberFromAuthentication() {
+    public String getMemberFromAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("authentication = " + authentication);
         if (authentication == null || AnonymousAuthenticationToken.class.
                 isAssignableFrom(authentication.getClass())) {
             return null;
         }
-        Optional<Member> member = memberRepository.findByUsername(authentication.getName());
-        return member.get();
+        return authentication.getName();
     }
 
     // 토큰에 대한 예외 검사
