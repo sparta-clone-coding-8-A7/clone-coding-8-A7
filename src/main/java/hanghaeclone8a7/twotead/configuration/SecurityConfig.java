@@ -4,6 +4,7 @@ package hanghaeclone8a7.twotead.configuration;
 
 import hanghaeclone8a7.twotead.jwt.JwtFilter;
 import hanghaeclone8a7.twotead.jwt.TokenProvider;
+import hanghaeclone8a7.twotead.security.AuthenticationEntryPiontHandler;
 import hanghaeclone8a7.twotead.security.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 public class SecurityConfig{
 
     private CustomAccessDeniedHandler customAccessDeniedHandler;
+    private
 
     @Value("${jwt.secret}")
     String SECRET_KEY;
@@ -59,6 +61,7 @@ public class SecurityConfig{
 
         http.csrf().disable()
                 .exceptionHandling()
+                    .authenticationEntryPoint(new AuthenticationEntryPiontHandler())
                     .accessDeniedHandler(new CustomAccessDeniedHandler())
                 .and()
                     .headers()
