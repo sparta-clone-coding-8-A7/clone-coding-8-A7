@@ -31,7 +31,9 @@ public class CheckUtil {
         if (!tokenProvider.validateToken(request.getHeader("RefreshToken"))) {
             return null;
         }
-        return tokenProvider.getMemberFromAuthentication();
+        String memberString = tokenProvider.getMemberFromAuthentication();
+        Optional<Member> member = memberRepository.findByUsername(memberString);
+        return member.get();
     }
 
 }
