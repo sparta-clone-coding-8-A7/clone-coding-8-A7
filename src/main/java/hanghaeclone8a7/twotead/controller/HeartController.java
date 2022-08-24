@@ -1,6 +1,7 @@
 package hanghaeclone8a7.twotead.controller;
 
 import hanghaeclone8a7.twotead.dto.response.ResponseDto;
+import hanghaeclone8a7.twotead.jwt.UserDetailsImpl;
 import hanghaeclone8a7.twotead.service.HeartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,7 +19,7 @@ public class HeartController {
     private final HeartService heartService;
 
     @PostMapping("/api/jobPost/{jobPostId}/heart")
-    public ResponseDto<?> heart(@PathVariable Long jobPostId, @AuthenticationPrincipal UserDetails userDetails, HttpServletRequest request){
+    public ResponseDto<?> heart(@PathVariable Long jobPostId, @AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request){
         return heartService.heart(jobPostId,userDetails,request);
 
     }

@@ -7,11 +7,14 @@ import hanghaeclone8a7.twotead.dto.request.KakaoUserInfoDto;
 import hanghaeclone8a7.twotead.dto.response.MemberResponseDto;
 import hanghaeclone8a7.twotead.dto.response.ResponseDto;
 import hanghaeclone8a7.twotead.jwt.TokenProvider;
+import hanghaeclone8a7.twotead.jwt.UserDetailsImpl;
+import hanghaeclone8a7.twotead.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -19,6 +22,8 @@ public class MemberService {
 
     private final KakaoUserService kakaoUserService;
     private final TokenProvider tokenProvider;
+
+    private final MemberRepository memberRepository;
 
 
     public ResponseDto<?> kakaoLogin(String authorityCode, HttpServletResponse response) throws JsonProcessingException {
@@ -40,19 +45,20 @@ public class MemberService {
     }
 
     public ResponseDto<?> logout(HttpServletRequest request) {
-        // 멤버를 찾기
-        Member member = tokenProvider.getMemberFromAuthentication();
-
-        // 우리쪽 refresh token 삭제
+        // 우리쪽 refresh token 확인
         if (!tokenProvider.validateToken(request.getHeader("RefreshToken"))) {
             return ResponseDto.fail("INVALID_TOKEN", "Token이 유효하지 않습니다.");
         }
-        if (null == member) {
+        // 멤버를 찾기
+        String memberUsername = tokenProvider.getMemberFromAuthentication();
+        Optional<Member> member = memberRepository.findByUsername(memberUsername);
+
+        if (member.isEmpty()) {
             return ResponseDto.fail("MEMBER_NOT_FOUND",
                     "사용자를 찾을 수 없습니다.");
         }
 
-        return tokenProvider.deleteRefreshToken(member);
+        return tokenProvider.deleteRefreshToken(member.get());
 
     }
 

@@ -183,6 +183,7 @@ public class JobPostService {
         List<JobPostImgUrl> imgUrlList = jobPostImgUrlRepository.findAllByJobPostId(jobPostId);
         // 스택리스트
         List<StackList> stackList = stackListRepository.findAllByJobPostId(jobPostId);
+        System.out.println("stackList = " + stackList);
         JobPostDetailResponseDto jobPostDetailResponseDto = JobPostDetailResponseDto.builder()
                 .position(jobPost.getPosition())
                 .name(company.getName())
