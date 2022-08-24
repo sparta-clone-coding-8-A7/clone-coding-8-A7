@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface HeartRepository extends JpaRepository<Heart, Long> {
-    Optional<Heart> findByMemberAndJobPost(Member member, JobPost jobPost);
+    Optional<Heart> findByMemberAndJobPostId(Member member, Long jobPostId);
+    Optional<Heart> findByMemberIdAndJobPostId(Long memberId, Long jobPostId);
     List<Heart> findByJobPostId(Long jobPostId);
 }

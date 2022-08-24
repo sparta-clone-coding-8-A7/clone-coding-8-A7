@@ -1,6 +1,7 @@
 package hanghaeclone8a7.twotead.jwt;
 
 import hanghaeclone8a7.twotead.domain.Member;
+import hanghaeclone8a7.twotead.domain.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
