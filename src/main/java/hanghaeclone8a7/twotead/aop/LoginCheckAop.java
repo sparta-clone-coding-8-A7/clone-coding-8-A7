@@ -34,7 +34,7 @@ public class LoginCheckAop {
     }
 
     @Transactional
-    public Member validateMember(HttpServletRequest request) {
+    public String validateMember(HttpServletRequest request) {
         if (!tokenProvider.validateToken(request.getHeader("RefreshToken"))) {
             return null;
         }
