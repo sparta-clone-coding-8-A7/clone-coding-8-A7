@@ -21,5 +21,7 @@ public class StackList {
     private Long jobPostId; // 채용공고 식별번호
     @Column(nullable = false)
     private Long stackId; // 스택
+    @Column(nullable = false)
+    private String name; // 스택
 
 }

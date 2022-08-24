@@ -73,9 +73,6 @@ public class JobPostCustomRePository {
                 jobPost.createdAt,
                 ConstantImpl.create("%y%m%d%H%i%s")
         );
-        System.out.println("ㅂ빚다겁ㅈ디ㅏ거 = " + StringExpressions.lpad(jobPost.heart.stringValue(),6,'0').concat(StringExpressions.lpad(stringTemplate, 12, '0')
-                .concat(StringExpressions.lpad(jobPost.id.stringValue(),8,'0')))
-                .lt(customCursor));
         return StringExpressions.lpad(jobPost.heart.stringValue(),6,'0').concat(StringExpressions.lpad(stringTemplate, 12, '0')
                 .concat(StringExpressions.lpad(jobPost.id.stringValue(),8,'0')))
                 .lt(customCursor);

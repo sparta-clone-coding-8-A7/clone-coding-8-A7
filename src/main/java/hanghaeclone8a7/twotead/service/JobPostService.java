@@ -52,6 +52,7 @@ public class JobPostService {
         List<JobPostResponseCursorDto> resultList = new ArrayList<>();
         for(int i=0; i<list.size(); i++){
             String newCursor = genereateCursor(list.get(i).getCreatedAt(), list.get(i).getHeart(), list.get(i).getId());
+            System.out.println("newCursor = " + newCursor);
             resultList.add(new JobPostResponseCursorDto(list.get(i), newCursor));
         }
         return ResponseDto.success(resultList);
@@ -167,10 +168,26 @@ public class JobPostService {
                 ).collect(Collectors.toList());
         jobPostImgUrlRepository.saveAll(imgList);
 
-        List<StackList> stacks = requestDto.getStacks().stream()
-                .map(stackId -> StackList.builder()
-                        .jobPostId(jobPostId)
-                        .stackId(stackId).build()).collect(Collectors.toList());
+        List<Long> stack = requestDto.getStacks();
+        List<Stack> originStackList = stackRepository.findAll();
+        List<String> nameList = new ArrayList<>();
+
+        for(int i=0; i<stack.size(); i++){
+            nameList.add(originStackList.get(stack.get(i).intValue()-1).getName());
+        }
+
+//        List<StackList> stacks = requestDto.getStacks().stream()
+//                .map(stackId -> StackList.builder()
+//                        .jobPostId(jobPostId)
+//                        .stackId(stackId).build()).collect(Collectors.toList());
+        List<StackList> stacks = new ArrayList<>();
+        for(int i=0; i< stack.size(); i++){
+            stacks.add(StackList.builder()
+                    .jobPostId(jobPostId)
+                    .stackId(stack.get(i))
+                    .name(nameList.get(i))
+                    .build());
+        }
         stackListRepository.saveAll(stacks);
         //
         return ResponseDto.success();
@@ -194,7 +211,6 @@ public class JobPostService {
         List<JobPostImgUrl> imgUrlList = jobPostImgUrlRepository.findAllByJobPostId(jobPostId);
         // 스택리스트
         List<StackList> stackList = stackListRepository.findAllByJobPostId(jobPostId);
-        System.out.println("stackList = " + stackList);
         JobPostDetailResponseDto jobPostDetailResponseDto = JobPostDetailResponseDto.builder()
                 .position(jobPost.getPosition())
                 .name(company.getName())
@@ -242,11 +258,27 @@ public class JobPostService {
         jobPostImgUrlRepository.saveAll(imgList);
         // StackList 수정
         stackListRepository.deleteAllByJobPostId(jobPostId);
-        List<StackList> stacks = requestDto.getStacks().stream()
-                .map(stackId -> StackList.builder()
-                        .jobPostId(jobPostId)
-                        .stackId(stackId).build()).collect(Collectors.toList());
-        stackListRepository.saveAll(stacks);
+
+        List<Long> stack = requestDto.getStacks();
+        List<Stack> originStackList = stackRepository.findAll();
+        List<String> nameList = new ArrayList<>();
+
+        for(int i=0; i<stack.size(); i++){
+            nameList.add(originStackList.get(stack.get(i).intValue()-1).getName());
+        }
+
+//        List<StackList> stacks = requestDto.getStacks().stream()
+//                .map(stackId -> StackList.builder()
+//                        .jobPostId(jobPostId)
+//                        .stackId(stackId).build()).collect(Collectors.toList());
+        List<StackList> stacks = new ArrayList<>();
+        for(int i=0; i< stack.size(); i++){
+            stacks.add(StackList.builder()
+                    .jobPostId(jobPostId)
+                    .stackId(stack.get(i))
+                    .name(nameList.get(i))
+                    .build());
+        }
 
         return ResponseDto.success();
     }
@@ -345,7 +377,7 @@ public class JobPostService {
                 .replace("T","")
                 .replace("-","")
                 .replace(":","")
-                +jobPostId;
+                +String.format("%08d", jobPostId);
     }
 
 
