@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class HeartService {
             return ResponseDto.fail("MEMBER_NOT_FOUND",
                     "로그인이 필요합니다.");
         }
+
         Optional<JobPost> post = jobPostRepository.findById(id);
 
         //게시글이 있으면
@@ -63,6 +65,34 @@ public class HeartService {
         post.get().heartUpdate(heartList);
         HeartResponseDto heartResponseDto = HeartResponseDto.createHeartResponseDto(like, heartList);
         return heartResponseDto;
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseDto<?> getHeart(Long postId, Long memberId){
+
+        if(postId == null){
+            return ResponseDto.fail("NOT_FOUND","존재하지 않는 게시글입니다.");
+        }
+
+        if(memberId == null){
+            return getHeartResponseDtoByJobPostId(postId, false);
+        }
+
+        //유저가 게시글을 눌렀는지 확인
+        Optional<Heart> postExists = heartRepository.findByMemberIdAndJobPostId(memberId,postId);
+
+        // 누르지 않은 유저
+        if(postExists.isEmpty()){
+            return getHeartResponseDtoByJobPostId(postId, false);
+        }
+        //누른 유저
+        return getHeartResponseDtoByJobPostId(postId, true);
+    }
+
+    private ResponseDto<HeartResponseDto> getHeartResponseDtoByJobPostId(Long postId, boolean like) {
+        List<Heart> heartList = heartRepository.findByJobPostId(postId);
+        HeartResponseDto heartResponseDto = HeartResponseDto.createHeartResponseDto(like, heartList);
+        return ResponseDto.success(heartResponseDto);
     }
 
 }

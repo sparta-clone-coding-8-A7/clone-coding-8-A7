@@ -4,6 +4,7 @@ package hanghaeclone8a7.twotead.configuration;
 
 import hanghaeclone8a7.twotead.jwt.JwtFilter;
 import hanghaeclone8a7.twotead.jwt.TokenProvider;
+import hanghaeclone8a7.twotead.security.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -18,7 +19,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableWebSecurity
@@ -26,6 +31,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @ConditionalOnDefaultWebSecurity
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class SecurityConfig{
+
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Value("${jwt.secret}")
     String SECRET_KEY;
@@ -51,27 +58,30 @@ public class SecurityConfig{
         http.cors();
 
         http.csrf().disable()
-                .headers()
-                .frameOptions()
-                .sameOrigin()
+                .exceptionHandling()
+                    .accessDeniedHandler(new CustomAccessDeniedHandler())
+                .and()
+                    .headers()
+                    .frameOptions()
+                    .sameOrigin()
 
                 .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
-                .authorizeRequests()
-                .antMatchers("/api/user/**").permitAll()
-                .antMatchers("/api/jobPost/**").permitAll()
-                .antMatchers("/api/company/**").permitAll()
-                .antMatchers("/api/comment/**").permitAll()
-                .antMatchers("/h2-console/**").permitAll()
-                .anyRequest().permitAll()
+                    .authorizeRequests()
+                        .antMatchers("/api/user/**").permitAll()
+                        .antMatchers("/api/jobPost/**").permitAll()
+                        .antMatchers("/api/comment/**").permitAll()
+                        .antMatchers("/h2-console/**").permitAll()
+                        .antMatchers("/api/company/**").hasRole("COMPANY")
+                        .anyRequest().permitAll()
                 .and()
-                .oauth2Login()
+                .   oauth2Login()
 
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                    .apply(new JwtSecurityConfig(tokenProvider));
 
         return http.build();
     }
