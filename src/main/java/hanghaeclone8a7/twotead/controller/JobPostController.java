@@ -51,7 +51,7 @@ public class JobPostController {
     }
 
     // 채용공고 작성페이지(role=company만 가능)
-    @GetMapping(value = "/company/jobPost/page")
+    @GetMapping(value = "/company/jobPost/page/stackList")
     public ResponseDto<?> getJobPostPage(HttpServletRequest request) {
         return jobPostService.getJobPostPage(request);
     }

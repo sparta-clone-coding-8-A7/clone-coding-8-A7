@@ -50,6 +50,9 @@ public class JobPost extends Timestamped{
     @Column(nullable = false)
     private boolean invalid = true; // 마감일 지났으면 false (안보임)
 
+    /*@OneToMany(mappedBy = "jobPost", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<JobPostImgUrl> imgList;*/
+
     public void update(JobPostRequestDto jobPostRequestDto){
         this.position = jobPostRequestDto.getPosition();
         this.content = jobPostRequestDto.getContent();

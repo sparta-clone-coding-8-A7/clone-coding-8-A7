@@ -143,8 +143,11 @@ public class JobPostService {
                 .build();
 
         Long jobPostId = jobPostRepository.save(jobPost).getId();
-
-        // 이미지리스트 저장
+        /**
+         *이미지리스트 저장.
+         * 연관관계를 설정하는편이 더 좋았을 것 같다. 상세조회할 때도 모든 imgUrl를 다 불러와야하고, 게시글이 삭제되면
+         * 같이 삭제되더야 하기 때문이다. 연관과께로 설정했으면 아래와 같은 작업이 필요 없었을 듯 하다.
+         */
         List<JobPostImgUrl> imgList = requestDto.getImgUrlList().stream()
                 .map(imgUrl -> JobPostImgUrl.builder()
                         .jobPostId(jobPostId)
@@ -153,7 +156,6 @@ public class JobPostService {
                 ).collect(Collectors.toList());
         jobPostImgUrlRepository.saveAll(imgList);
 
-        // 스택리스트생성
         List<StackList> stacks = requestDto.getStacks().stream()
                 .map(stackId -> StackList.builder()
                         .jobPostId(jobPostId)
