@@ -5,6 +5,8 @@ import hanghaeclone8a7.twotead.domain.*;
 import hanghaeclone8a7.twotead.dto.request.JobPostRequestDto;
 import hanghaeclone8a7.twotead.dto.request.MailDto;
 import hanghaeclone8a7.twotead.dto.response.JobPostDetailResponseDto;
+import hanghaeclone8a7.twotead.dto.response.JobPostResponseCursorDto;
+import hanghaeclone8a7.twotead.dto.response.JobPostResponseDto;
 import hanghaeclone8a7.twotead.dto.response.ResponseDto;
 import hanghaeclone8a7.twotead.repository.*;
 import hanghaeclone8a7.twotead.utils.CheckUtil;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -43,8 +46,16 @@ public class JobPostService {
     private String BASICIMAGE;
 
     @Transactional(readOnly = true)
-    public ResponseDto<?> getJobPostList(String query, Long lastPostId, int size, HttpServletRequest request) {
-        return ResponseDto.success(jobPostCustomRePository.findJobPosts(query, lastPostId, size));
+    public ResponseDto<?> getJobPostList(String query, String cursor, int size, HttpServletRequest request) {
+
+        List<JobPostResponseDto> list = jobPostCustomRePository.findJobPosts(query, size, cursor);
+        List<JobPostResponseCursorDto> resultList = new ArrayList<>();
+        for(int i=0; i<list.size(); i++){
+            String newCursor = genereateCursor(list.get(i).getCreatedAt(), list.get(i).getHeart(), list.get(i).getId());
+            resultList.add(new JobPostResponseCursorDto(list.get(i), newCursor));
+        }
+        return ResponseDto.success(resultList);
+        //return ResponseDto.success(jobPostCustomRePository.findJobPosts(query, lastPostId, size));
     }
 
     // 검색결과 전체 조회
@@ -325,6 +336,15 @@ public class JobPostService {
 
         jobPostRepository.updateInvalidForDeadlinePassed(theDayBefore);
 
+    }
+
+    String genereateCursor(LocalDateTime createdAt, int heart, Long jobPostId){
+        return String.format("%06d",heart)+createdAt.toString()
+                .substring(2,19)
+                .replace("T","")
+                .replace("-","")
+                .replace(":","")
+                +jobPostId;
     }
 
 

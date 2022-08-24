@@ -4,16 +4,10 @@ import hanghaeclone8a7.twotead.dto.request.JobPostRequestDto;
 import hanghaeclone8a7.twotead.dto.request.MailDto;
 import hanghaeclone8a7.twotead.dto.response.ResponseDto;
 import hanghaeclone8a7.twotead.service.JobPostService;
-import hanghaeclone8a7.twotead.service.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.PostConstruct;
-import javax.mail.Multipart;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -25,10 +19,10 @@ public class JobPostController {
     //메인페이지(채용공고리스트)
     @GetMapping(value = "/jobPost")
     public ResponseDto<?> getJobPostList(@RequestParam(required = false) String query,
-                                         @RequestParam Long lastPostId,
+                                         @RequestParam(required = false) String cursor,
                                          @RequestParam int size,
                                      HttpServletRequest request) {
-        return jobPostService.getJobPostList(query, lastPostId, size, request);
+        return jobPostService.getJobPostList(query, cursor, size, request);
     }
 
     //메인페이지(채용공고리스트)

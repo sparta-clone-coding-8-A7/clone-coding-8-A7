@@ -23,14 +23,16 @@ public class JobPostResponseDto {
     private String location; // company
     private String imgUrl;
     private int heart;
+    private LocalDateTime createdAt;
 
     @QueryProjection
-    public JobPostResponseDto(Long id, String position, String name, String location, String imgUrl, int heart) {
+    public JobPostResponseDto(Long id, String position, String name, String location, String imgUrl, int heart, LocalDateTime createdAt) {
         this.id = id;
         this.position = position;
         this.name = name;
         this.location = location;
         this.imgUrl = imgUrl;
         this.heart = heart;
+        this.createdAt = createdAt;
     }
 }

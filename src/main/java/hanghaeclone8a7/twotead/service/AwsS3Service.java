@@ -5,7 +5,11 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import hanghaeclone8a7.twotead.domain.Member;
+import hanghaeclone8a7.twotead.dto.response.ResponseDto;
+import hanghaeclone8a7.twotead.exception.LoginFailException;
 import hanghaeclone8a7.twotead.repository.MemberRepository;
+import hanghaeclone8a7.twotead.utils.CheckUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +35,7 @@ public class AwsS3Service {
     private String region;
 
     private final AmazonS3 amazonS3;
-    private final MemberRepository memberRepository;
+    private final CheckUtil checkUtil;
 
     public List<String> uploadFile(List<MultipartFile> multipartFile, HttpServletRequest request) {
 
@@ -39,8 +44,11 @@ public class AwsS3Service {
         // 멤버 검증
 
         //테스트용
-        String userId = "121";
-
+        Member member = checkUtil.validateMember(request);
+        if(member == null){
+            throw new LoginFailException();
+        }
+        Long userId = member.getId();
         multipartFile.forEach(file -> {
 
             // String fileName = createFileName(file.getOriginalFilename());

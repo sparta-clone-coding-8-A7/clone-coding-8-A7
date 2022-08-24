@@ -13,6 +13,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Enumeration;
 
 @Aspect
 @RequiredArgsConstructor
@@ -27,20 +28,11 @@ public class LoginCheckAop {
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
                 .getRequestAttributes()).getRequest();
-
+        System.out.println("Authorization = " + request.getHeader("Authorization"));
+        System.out.println("RefreshToken = " + request.getHeader("RefreshToken"));
         if (null == request.getHeader("RefreshToken") || null == request.getHeader("Authorization")) {
                 throw new LoginFailException();
         }
     }
-
-    @Transactional
-    public Member validateMember(HttpServletRequest request) {
-        if (!tokenProvider.validateToken(request.getHeader("RefreshToken"))) {
-            return null;
-        }
-        return tokenProvider.getMemberFromAuthentication();
-    }
-
-
 
 }
