@@ -51,9 +51,21 @@ public class JobPostController {
     }
 
     // 채용공고 작성페이지(role=company만 가능)
-    @GetMapping(value = "/company/jobPost/page")
+    @GetMapping(value = "/company/jobPost/page/stackList")
     public ResponseDto<?> getJobPostPage(HttpServletRequest request) {
         return jobPostService.getJobPostPage(request);
+    }
+
+    // 채용공고에 JobGroup가져오기
+    @GetMapping(value = "/company/jobPost/page/jobGroup")
+    public ResponseDto<?> getJobPostPageJobGroup(HttpServletRequest request) {
+        return jobPostService.getJobPostPageJobGroup(request);
+    }
+
+    // 채용공고에 JobDetail가져오기
+    @GetMapping(value = "/company/jobPost/page/jobDetail/{jobGroupId}")
+    public ResponseDto<?> getJobPostPageJobDetail(@PathVariable Long jobGroupId, HttpServletRequest request) {
+        return jobPostService.getJobPostPageJobDetail(request, jobGroupId);
     }
 
     //채용공고 수정(role=company만 가능)
@@ -80,10 +92,9 @@ public class JobPostController {
     }
 
     // 지원하기(role=구직자)
-    @PostMapping("/mail")
-    public ResponseDto<?> execMail(HttpServletRequest request, @ModelAttribute MailDto mailDto) {
-        return jobPostService.apply(request, mailDto);
+    @PostMapping("/jobPost/{jobPostId}/apply")
+    public ResponseDto<?> execMail(HttpServletRequest request, @ModelAttribute MailDto mailDto, @PathVariable Long jobPostId) {
+        return jobPostService.apply(request, mailDto, jobPostId);
     }
-
 
 }

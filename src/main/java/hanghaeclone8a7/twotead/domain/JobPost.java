@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.persistence.*;
 import java.util.List;
@@ -61,7 +62,7 @@ public class JobPost extends Timestamped{
 
         String imgUrl = "";
         if(jobPostRequestDto.getImgUrlList().size() == 0){
-            imgUrl = "기본이미지.jpg";
+            imgUrl = "https://hanghae7zo.s3.ap-northeast-2.amazonaws.com/basicImage.png";
         } else {
             imgUrl = jobPostRequestDto.getImgUrlList().get(0);
         }
