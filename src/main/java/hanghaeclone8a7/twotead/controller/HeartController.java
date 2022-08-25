@@ -25,7 +25,7 @@ public class HeartController {
     }
 
     @GetMapping("/api/jobPost/{jobPostId}/heart")
-    public ResponseDto<?> getHeart(@PathVariable Long jobPostId, @RequestParam(value = "id") Long memberId){
-        return heartService.getHeart(jobPostId, memberId);
+    public ResponseDto<?> getHeart(@PathVariable Long jobPostId, HttpServletRequest request){
+        return heartService.getHeart(jobPostId, request);
     }
 }
