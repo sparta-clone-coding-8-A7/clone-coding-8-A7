@@ -2,11 +2,13 @@ package hanghaeclone8a7.twotead.service;
 
 import hanghaeclone8a7.twotead.domain.Heart;
 import hanghaeclone8a7.twotead.domain.JobPost;
+import hanghaeclone8a7.twotead.domain.Member;
 import hanghaeclone8a7.twotead.dto.response.HeartResponseDto;
 import hanghaeclone8a7.twotead.dto.response.ResponseDto;
 import hanghaeclone8a7.twotead.jwt.UserDetailsImpl;
 import hanghaeclone8a7.twotead.repository.HeartRepository;
 import hanghaeclone8a7.twotead.repository.JobPostRepository;
+import hanghaeclone8a7.twotead.utils.CheckUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class HeartService {
 
     private final HeartRepository heartRepository;
     private final JobPostRepository jobPostRepository;
+    private final CheckUtil checkUtil;
 
     @Transactional
     public ResponseDto<?> heart(Long id, UserDetailsImpl userDetails, HttpServletRequest request){
@@ -68,18 +71,19 @@ public class HeartService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseDto<?> getHeart(Long postId, Long memberId){
+    public ResponseDto<?> getHeart(Long postId, HttpServletRequest request){
+        Member member = checkUtil.validateMember(request);
 
         if(postId == null){
             return ResponseDto.fail("NOT_FOUND","존재하지 않는 게시글입니다.");
         }
 
-        if(memberId == null){
+        if(member == null){
             return getHeartResponseDtoByJobPostId(postId, false);
         }
 
         //유저가 게시글을 눌렀는지 확인
-        Optional<Heart> postExists = heartRepository.findByMemberIdAndJobPostId(memberId,postId);
+        Optional<Heart> postExists = heartRepository.findByMemberIdAndJobPostId(member.getId(),postId);
 
         // 누르지 않은 유저
         if(postExists.isEmpty()){
