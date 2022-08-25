@@ -79,6 +79,7 @@ public class SecurityConfig{
                         .antMatchers("/api/comment/**").permitAll()
                         .antMatchers("/h2-console/**").permitAll()
                         .antMatchers("/api/company/**").hasRole("COMPANY")
+                        .antMatchers("/companypage/**").hasRole("COMPANY")
                         .anyRequest().permitAll()
                 .and()
                 .   oauth2Login()
